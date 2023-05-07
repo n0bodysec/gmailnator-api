@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
+import { CustomError } from '@n0bodysec/ts-utils';
 import { JSDOM } from 'jsdom';
 import { Gmailnator } from '..';
-import { CustomError } from '../utils/CustomError';
-import { IMessageContent, IMessageListOptions, IMessageReadOptions } from '../utils/types';
+import { IMessageContent, IMessageListOptions, IMessageReadOptions, INewMessagesData } from '../utils/types';
 
 const isBase64 = (input: string) => /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(input);
 
@@ -36,7 +36,7 @@ class Checker
 			this.base.events.emit('newMessages', {
 				newMessages,
 				allMessages: this.base.messages.cachedMessages,
-			});
+			} as INewMessagesData);
 		}
 	};
 }

@@ -27,6 +27,7 @@
 		"typescript": "^5.0.4"
 	},
 	"dependencies": {
+		"@n0bodysec/ts-utils": "^1.0.0",
 		"axios": "^1.4.0",
 		"jsdom": "^22.0.0"
 	}

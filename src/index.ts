@@ -4,6 +4,7 @@ import { Email } from './modules/email';
 import { Messages } from './modules/messages';
 import { Tokens } from './modules/tokens';
 import { Utils } from './modules/utils';
+import { IGmailnatorOptions } from './utils/types';
 
 export class Gmailnator
 {
@@ -20,9 +21,9 @@ export class Gmailnator
 		},
 	});
 
-	constructor(options?: { delays: { checkEmailsDelay: number; }; })
+	constructor(options?: IGmailnatorOptions)
 	{
-		this.messages.checker.delayMs = options?.delays.checkEmailsDelay || 0;
+		this.messages.checker.delayMs = options?.delays?.checkEmailsDelay || 0;
 		this.messages.checker.updateInterval(this.messages.checker.delayMs);
 	}
 }

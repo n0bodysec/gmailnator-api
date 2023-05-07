@@ -1,5 +1,5 @@
+import { CustomError } from '@n0bodysec/ts-utils';
 import { Gmailnator } from '..';
-import { CustomError } from '../utils/CustomError';
 
 export class Utils
 {

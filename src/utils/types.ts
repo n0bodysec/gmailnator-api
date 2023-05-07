@@ -31,3 +31,10 @@ export interface ITemporalEmailOptions
 	localPart?: string;
 	genSize?: number;
 }
+
+export interface IGmailnatorOptions
+{
+	delays?: {
+		checkEmailsDelay?: number;
+	};
+}
