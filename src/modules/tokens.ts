@@ -8,7 +8,7 @@ export class Tokens
 	xsrf: string | undefined;
 	session: string | undefined;
 
-	get = async () =>
+	async get()
 	{
 		const res = await this.base.axios.get('/');
 		const headers = res.headers['set-cookie'];
@@ -21,5 +21,5 @@ export class Tokens
 		this.session = session;
 
 		return { response: res, xsrf, session };
-	};
+	}
 }

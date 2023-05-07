@@ -2,7 +2,7 @@
 import { CustomError } from '@n0bodysec/ts-utils';
 import { JSDOM } from 'jsdom';
 import { Gmailnator } from '..';
-import { IMessageContent, IMessageListOptions, IMessageReadOptions, INewMessagesData } from '../utils/types';
+import { IMessageContent, IMessageListOptions, IMessageReadOptions, INewMessagesData, IWaitMessagesOptions } from '../utils/types';
 
 const isBase64 = (input: string) => /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(input);
 
@@ -13,13 +13,13 @@ class Checker
 	delayMs = 0;
 	interval: NodeJS.Timer | undefined;
 
-	updateInterval = (delayMs: number) =>
+	updateInterval(delayMs: number)
 	{
 		clearInterval(this.interval);
 		if (delayMs > 0) this.interval = setInterval(this.run, delayMs);
-	};
+	}
 
-	run = async () =>
+	async run()
 	{
 		if (this.delayMs <= 0)
 		{
@@ -38,7 +38,7 @@ class Checker
 				allMessages: this.base.messages.cachedMessages,
 			} as INewMessagesData);
 		}
-	};
+	}
 }
 
 export class Messages
@@ -51,7 +51,7 @@ export class Messages
 	cachedMessages: IMessageContent[] = [];
 	checker: Checker;
 
-	list = async (options?: IMessageListOptions) =>
+	async list(options?: IMessageListOptions)
 	{
 		this.base.email.lastUsed = options?.email || this.base.email.lastUsed;
 
@@ -65,9 +65,9 @@ export class Messages
 			response: res,
 			messageData: !options?.filterAds ? res.data.messageData : (res.data.messageData as IMessageContent[]).filter((x) => isBase64(x.messageID as string)),
 		};
-	};
+	}
 
-	read = async (options: IMessageReadOptions) =>
+	async read(options: IMessageReadOptions)
 	{
 		this.base.email.lastUsed = options?.email || this.base.email.lastUsed;
 
@@ -81,9 +81,9 @@ export class Messages
 		const dom = new JSDOM(res.data);
 		dom.window.document.getElementById('subject-header')?.remove();
 		return dom.window.document.body.innerHTML;
-	};
+	}
 
-	getNewerMessages = async (): Promise<IMessageContent[]> =>
+	async getNewerMessages(): Promise<IMessageContent[]>
 	{
 		const oldMessages = this.cachedMessages;
 		await this.list();
@@ -99,42 +99,45 @@ export class Messages
 		});
 
 		return result;
-	};
+	}
 
-	waitForNewMessages = async (delayMs = 10000, maxAttempts = 3, runImmediately = false): Promise<IMessageContent[]> => new Promise((resolve, reject) =>
+	async waitForNewMessages(options?: IWaitMessagesOptions): Promise<IMessageContent[]>
 	{
-		let ticks = 1;
-		let interval: NodeJS.Timer | undefined;
-
-		const fn = async () =>
+		return new Promise((resolve, reject) =>
 		{
-			const newMessages = await this.base.messages.getNewerMessages();
+			let ticks = 1;
+			let interval: NodeJS.Timer | undefined;
 
-			if (newMessages.length > 0)
+			const fn = async () =>
 			{
-				clearInterval(interval);
-				resolve(newMessages);
-				return;
-			}
+				const newMessages = await this.base.messages.getNewerMessages();
 
-			if (ticks > maxAttempts - 1)
+				if (newMessages.length > 0)
+				{
+					clearInterval(interval);
+					resolve(newMessages);
+					return;
+				}
+
+				if (ticks > (options?.maxAttempts ?? 3) - 1)
+				{
+					clearInterval(interval);
+					reject(new CustomError('Max attempts reached for waitForNewMessages()'));
+					return;
+				}
+
+				ticks++;
+			};
+
+			if (options?.runImmediately ?? false)
 			{
-				clearInterval(interval);
-				reject(new CustomError('Max attempts reached for waitForNewMessages()'));
-				return;
+				fn();
+				interval = setInterval(fn, options?.delayMs ?? 10000);
 			}
-
-			ticks++;
-		};
-
-		if (runImmediately)
-		{
-			fn();
-			interval = setInterval(fn, delayMs);
-		}
-		else
-		{
-			interval = setInterval(fn, delayMs);
-		}
-	});
+			else
+			{
+				interval = setInterval(fn, options?.delayMs ?? 10000);
+			}
+		});
+	}
 }

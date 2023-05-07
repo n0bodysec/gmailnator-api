@@ -32,6 +32,13 @@ export interface ITemporalEmailOptions
 	genSize?: number;
 }
 
+export interface IWaitMessagesOptions
+{
+	delayMs?: number;
+	maxAttempts?: number;
+	runImmediately?: boolean;
+}
+
 export interface IGmailnatorOptions
 {
 	delays?: {
