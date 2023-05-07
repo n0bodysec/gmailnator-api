@@ -11,4 +11,5 @@ module.exports = {
 		'import/no-cycle': 'off',
 		'import/prefer-default-export': 'off',
 	},
+	ignorePatterns: ['node_modules', 'lib'],
 };

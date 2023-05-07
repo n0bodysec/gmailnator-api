@@ -12,7 +12,7 @@ export class Tokens
 	{
 		const res = await this.base.axios.get('/');
 		const headers = res.headers['set-cookie'];
-		if (!headers) throw new CustomError('The `Set-Cookie` header was not found.');
+		if (!headers) throw new CustomError('The `Set-Cookie` header was not found');
 
 		const xsrf = decodeURIComponent(headers?.find((x) => x.includes('XSRF-TOKEN'))?.split('; ')[0]?.split('=')[1] ?? '') || undefined;
 		const session = decodeURIComponent(headers?.find((x) => x.includes('gmailnator_session'))?.split('; ')[0]?.split('=')[1] ?? '') || undefined;

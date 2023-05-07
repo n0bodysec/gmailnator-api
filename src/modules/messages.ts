@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { JSDOM } from 'jsdom';
 import { Gmailnator } from '..';
+import { CustomError } from '../utils/CustomError';
 import { IMessageContent, IMessageListOptions, IMessageReadOptions } from '../utils/types';
 
 const isBase64 = (input: string) => /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(input);
@@ -99,4 +100,41 @@ export class Messages
 
 		return result;
 	};
+
+	waitForNewMessages = async (delayMs = 10000, maxAttempts = 3, runImmediately = false): Promise<IMessageContent[]> => new Promise((resolve, reject) =>
+	{
+		let ticks = 1;
+		let interval: NodeJS.Timer | undefined;
+
+		const fn = async () =>
+		{
+			const newMessages = await this.base.messages.getNewerMessages();
+
+			if (newMessages.length > 0)
+			{
+				clearInterval(interval);
+				resolve(newMessages);
+				return;
+			}
+
+			if (ticks > maxAttempts - 1)
+			{
+				clearInterval(interval);
+				reject(new CustomError('Max attempts reached for waitForNewMessages()'));
+				return;
+			}
+
+			ticks++;
+		};
+
+		if (runImmediately)
+		{
+			fn();
+			interval = setInterval(fn, delayMs);
+		}
+		else
+		{
+			interval = setInterval(fn, delayMs);
+		}
+	});
 }
