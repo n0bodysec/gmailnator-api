@@ -13,13 +13,13 @@ class Checker
 	delayMs = 0;
 	interval: NodeJS.Timer | undefined;
 
-	updateInterval(delayMs: number)
+	updateInterval = (delayMs: number) =>
 	{
 		clearInterval(this.interval);
 		if (delayMs > 0) this.interval = setInterval(this.run, delayMs);
-	}
+	};
 
-	async run()
+	run = async () =>
 	{
 		if (this.delayMs <= 0)
 		{
@@ -38,7 +38,7 @@ class Checker
 				allMessages: this.base.messages.cachedMessages,
 			} as INewMessagesData);
 		}
-	}
+	};
 }
 
 export class Messages
@@ -51,7 +51,7 @@ export class Messages
 	cachedMessages: IMessageContent[] = [];
 	checker: Checker;
 
-	async list(options?: IMessageListOptions)
+	list = async (options?: IMessageListOptions) =>
 	{
 		this.base.email.lastUsed = options?.email || this.base.email.lastUsed;
 
@@ -65,9 +65,9 @@ export class Messages
 			response: res,
 			messageData: !options?.filterAds ? res.data.messageData : (res.data.messageData as IMessageContent[]).filter((x) => isBase64(x.messageID as string)),
 		};
-	}
+	};
 
-	async read(options: IMessageReadOptions)
+	read = async (options: IMessageReadOptions) =>
 	{
 		this.base.email.lastUsed = options?.email || this.base.email.lastUsed;
 
@@ -81,9 +81,9 @@ export class Messages
 		const dom = new JSDOM(res.data);
 		dom.window.document.getElementById('subject-header')?.remove();
 		return dom.window.document.body.innerHTML;
-	}
+	};
 
-	async getNewerMessages(): Promise<IMessageContent[]>
+	getNewerMessages = async (): Promise<IMessageContent[]> =>
 	{
 		const oldMessages = this.cachedMessages;
 		await this.list();
@@ -99,45 +99,42 @@ export class Messages
 		});
 
 		return result;
-	}
+	};
 
-	async waitForNewMessages(options?: IWaitMessagesOptions): Promise<IMessageContent[]>
+	waitForNewMessages = async (options?: IWaitMessagesOptions): Promise<IMessageContent[]> => new Promise((resolve, reject) =>
 	{
-		return new Promise((resolve, reject) =>
+		let ticks = 1;
+		let interval: NodeJS.Timer | undefined;
+
+		const fn = async () =>
 		{
-			let ticks = 1;
-			let interval: NodeJS.Timer | undefined;
+			const newMessages = await this.base.messages.getNewerMessages();
 
-			const fn = async () =>
+			if (newMessages.length > 0)
 			{
-				const newMessages = await this.base.messages.getNewerMessages();
-
-				if (newMessages.length > 0)
-				{
-					clearInterval(interval);
-					resolve(newMessages);
-					return;
-				}
-
-				if (ticks > (options?.maxAttempts ?? 3) - 1)
-				{
-					clearInterval(interval);
-					reject(new CustomError('Max attempts reached for waitForNewMessages()'));
-					return;
-				}
-
-				ticks++;
-			};
-
-			if (options?.runImmediately ?? false)
-			{
-				fn();
-				interval = setInterval(fn, options?.delayMs ?? 10000);
+				clearInterval(interval);
+				resolve(newMessages);
+				return;
 			}
-			else
+
+			if (ticks > (options?.maxAttempts ?? 3) - 1)
 			{
-				interval = setInterval(fn, options?.delayMs ?? 10000);
+				clearInterval(interval);
+				reject(new CustomError('Max attempts reached for waitForNewMessages()'));
+				return;
 			}
-		});
-	}
+
+			ticks++;
+		};
+
+		if (options?.runImmediately ?? false)
+		{
+			fn();
+			interval = setInterval(fn, options?.delayMs ?? 10000);
+		}
+		else
+		{
+			interval = setInterval(fn, options?.delayMs ?? 10000);
+		}
+	});
 }

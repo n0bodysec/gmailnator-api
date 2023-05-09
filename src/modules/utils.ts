@@ -5,7 +5,7 @@ export class Utils
 {
 	constructor(private base: Gmailnator) { }
 
-	genHeaders()
+	genHeaders = () =>
 	{
 		if (!this.base.tokens.session) throw new CustomError('Session token was not found');
 		if (!this.base.tokens.xsrf) throw new CustomError('XSRF token was not found');
@@ -15,5 +15,5 @@ export class Utils
 			'X-Xsrf-Token': this.base.tokens.xsrf,
 			'Content-Type': 'application/json',
 		};
-	}
+	};
 }
