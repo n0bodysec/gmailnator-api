@@ -21,6 +21,12 @@ export class Gmailnator
 		},
 	});
 
+	shutdown = () =>
+	{
+		this.messages.checker.updateInterval(0);
+		this.events.removeAllListeners();
+	};
+
 	constructor(options?: IGmailnatorOptions)
 	{
 		this.messages.checker.delayMs = options?.delays?.checkEmailsDelay || 0;
