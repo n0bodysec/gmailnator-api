@@ -1,4 +1,4 @@
-export type TEmailOptions = ('domain' | 'plusGmail' | 'dotGmail')[];
+export type TEmailOptions = ('domain' | 'plusGmail' | 'dotGmail' | 'googleMail')[];
 
 export interface IMessageContent
 {

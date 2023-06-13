@@ -10,7 +10,7 @@ import { INewMessagesData } from '../utils/types';
 	});
 
 	await api.tokens.get();
-	const { email } = await api.email.generate(['dotGmail', 'plusGmail']);
+	const { email } = await api.email.generate(['dotGmail', 'plusGmail', 'googleMail']);
 
 	console.log('Generated email:', email);
 

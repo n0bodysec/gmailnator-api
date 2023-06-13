@@ -10,7 +10,7 @@ export class Email
 
 	set = (email: string) => { this.lastUsed = email; };
 
-	generate = async (options: TEmailOptions = ['domain', 'plusGmail', 'dotGmail']) =>
+	generate = async (options: TEmailOptions = ['domain', 'plusGmail', 'dotGmail', 'googleMail']) =>
 	{
 		const res = await this.base.axios.post('/generate-email', { email: options }, {
 			headers: this.base.utils.genHeaders(),
